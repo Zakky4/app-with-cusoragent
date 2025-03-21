@@ -11,10 +11,14 @@ export default async function Home() {
   });
 
   return (
-    <main className="min-h-screen bg-gray-100 py-8">
+    <main className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 py-12">
       <div className="max-w-2xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Todoリスト</h1>
-        <TodoList initialTodos={todos} />
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl">
+          <h1 className="text-4xl font-bold text-white mb-8 text-center">
+            ✨ Todoリスト ✨
+          </h1>
+          <TodoList initialTodos={todos} />
+        </div>
       </div>
     </main>
   );

@@ -17,21 +17,27 @@ interface TodoListProps {
 export default function TodoList({ initialTodos }: TodoListProps) {
   const [todos, setTodos] = useState<Todo[]>(initialTodos);
   const [newTodo, setNewTodo] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const addTodo = async () => {
-    if (!newTodo.trim()) return;
+    if (!newTodo.trim() || isLoading) return;
 
-    const response = await fetch('/api/todos', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ title: newTodo }),
-    });
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/todos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: newTodo }),
+      });
 
-    const todo = await response.json();
-    setTodos([todo, ...todos]);
-    setNewTodo('');
+      const todo = await response.json();
+      setTodos([todo, ...todos]);
+      setNewTodo('');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleTodo = async (id: number) => {
@@ -66,33 +72,56 @@ export default function TodoList({ initialTodos }: TodoListProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
+    <div className="space-y-6">
+      <div className="relative">
         <input
           type="text"
           value={newTodo}
           onChange={(e) => setNewTodo(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && addTodo()}
           placeholder="新しいタスクを入力..."
-          className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-4 pr-16 bg-white/20 backdrop-blur-sm text-white placeholder-white/70 border-2 border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all duration-300"
         />
         <button
           onClick={addTodo}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={isLoading}
+          className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/30 hover:bg-white/40 text-white rounded-lg transition-all duration-300 ${
+            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          <PlusIcon className="w-5 h-5" />
+          <PlusIcon className="w-6 h-6" />
         </button>
       </div>
-      <div className="space-y-2">
-        {todos.map((todo) => (
-          <Todo
+      <div className="space-y-3">
+        {todos.map((todo, index) => (
+          <div
             key={todo.id}
-            {...todo}
-            onToggle={toggleTodo}
-            onDelete={deleteTodo}
-          />
+            className="transform transition-all duration-300 hover:scale-[1.02]"
+            style={{
+              opacity: 0,
+              animation: `fadeIn 0.5s ease-out forwards ${index * 0.1}s`,
+            }}
+          >
+            <Todo
+              {...todo}
+              onToggle={toggleTodo}
+              onDelete={deleteTodo}
+            />
+          </div>
         ))}
       </div>
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 } 
