@@ -7,12 +7,12 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const { completed } = await request.json();
   const id = parseInt(params.id);
+  const data = await request.json();
 
   const todo = await prisma.todo.update({
     where: { id },
-    data: { completed },
+    data,
   });
 
   return NextResponse.json(todo);
